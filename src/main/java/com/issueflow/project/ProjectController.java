@@ -1,13 +1,25 @@
 package com.issueflow.project;
 
+import java.util.List;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/projects")
 public class ProjectController {
+
+    private final ProjectService projectService;
+
+    public ProjectController(ProjectService projectService) {
+        this.projectService = projectService;
+    }
+
+    @GetMapping
+    public List<Project> getProjects() {
+        return projectService.getProjects();
+    }
 
     @GetMapping("/sample")
     public Project getSampleProject() {
@@ -17,19 +29,4 @@ public class ProjectController {
             "Web portal for customers"
         );
     }
-    @GetMapping
-    public List<Project> getProjects() {
-        return List.of(
-            new Project(
-                1L,
-                "Customer Portal",
-                "Web portal for customers"
-            ),
-            new Project(
-                2L,
-                "Internal Dashboard",
-                "Dashboard for internal operations"
-            )
-        );
-    }	
 }
