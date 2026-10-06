@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/api/projects")
@@ -34,8 +35,12 @@ public class ProjectController {
     }
 
     @PostMapping
-    public Project createProject(@Valid @RequestBody Project project) {
-        return projectService.createProject(project);
+    public ResponseEntity<Project> createProject(@Valid @RequestBody Project project) {
+        Project createdProject = projectService.createProject(project);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(createdProject);
     }
 }
 
