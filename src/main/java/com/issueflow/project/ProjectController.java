@@ -1,6 +1,7 @@
 package com.issueflow.project;
 
 import java.util.List;
+import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,7 +34,7 @@ public class ProjectController {
     }
 
     @PostMapping
-    public Project createProject(@RequestBody Project project) {
+    public Project createProject(@Valid @RequestBody Project project) {
         return projectService.createProject(project);
     }
 }
