@@ -31,15 +31,7 @@ public class ProjectController {
             .map(ResponseEntity::ok)
             .orElseGet(() -> ResponseEntity.notFound().build());
     }
-    
-    @GetMapping("/sample")
-    public Project getSampleProject() {
-        return new Project(
-            1L,
-            "Customer Portal",
-            "Web portal for customers"
-        );
-    }
+
     @PostMapping
     public Project createProject(@RequestBody Project project) {
         return projectService.createProject(project);
