@@ -25,12 +25,12 @@ public class IssueController {
     }
 
     @GetMapping("/issues")
-    public List<Issue> getIssues() {
+    public List<IssueResponse> getIssues() {
         return issueService.getIssues();
     }
 
     @PutMapping("/issues/{id}/status")
-    public ResponseEntity<Issue> updateIssueStatus(
+    public ResponseEntity<IssueResponse> updateIssueStatus(
             @PathVariable Long id,
             @Valid @RequestBody UpdateIssueStatusRequest request) {
 
@@ -40,7 +40,7 @@ public class IssueController {
     }
 
     @PostMapping("/projects/{projectId}/issues")
-    public ResponseEntity<Issue> createIssue(
+    public ResponseEntity<IssueResponse> createIssue(
             @PathVariable Long projectId,
             @Valid @RequestBody CreateIssueRequest request) {
 

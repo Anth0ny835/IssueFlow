@@ -21,11 +21,14 @@ public class IssueService {
         this.projectRepository = projectRepository;
     }
 
-    public List<Issue> getIssues() {
-        return issueRepository.findAll();
+    public List<IssueResponse> getIssues() {
+        return issueRepository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
-    public Optional<Issue> updateIssueStatus(
+    public Optional<IssueResponse> updateIssueStatus(
             Long id,
             UpdateIssueStatusRequest request) {
 
@@ -33,11 +36,13 @@ public class IssueService {
                 .map(issue -> {
                     issue.setStatus(request.getStatus());
 
-                    return issueRepository.save(issue);
+                    Issue savedIssue = issueRepository.save(issue);
+
+                    return toResponse(savedIssue);
                 });
     }
 
-    public Optional<Issue> createIssue(
+    public Optional<IssueResponse> createIssue(
             Long projectId,
             CreateIssueRequest request) {
 
@@ -51,7 +56,20 @@ public class IssueService {
                             project
                     );
 
-                    return issueRepository.save(issue);
+                    Issue savedIssue = issueRepository.save(issue);
+
+                    return toResponse(savedIssue);
                 });
+    }
+    
+    private IssueResponse toResponse(Issue issue) {
+        return new IssueResponse(
+                issue.getId(),
+                issue.getTitle(),
+                issue.getDescription(),
+                issue.getStatus(),
+                issue.getProject().getId(),
+                issue.getProject().getName()
+        );
     }
 }
