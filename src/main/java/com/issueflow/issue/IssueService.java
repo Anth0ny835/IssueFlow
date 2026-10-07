@@ -28,6 +28,11 @@ public class IssueService {
                 .toList();
     }
 
+    public Optional<IssueResponse> getIssueById(Long id) {
+        return issueRepository.findById(id)
+                .map(this::toResponse);
+    }
+
     public Optional<List<IssueResponse>> getIssuesByProjectId(Long projectId) {
         return projectRepository.findById(projectId)
                 .map(project ->
