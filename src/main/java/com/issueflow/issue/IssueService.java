@@ -37,14 +37,19 @@ public class IssueService {
                 });
     }
 
-    public Optional<Issue> createIssue(Long projectId, Issue issue) {
+    public Optional<Issue> createIssue(
+            Long projectId,
+            CreateIssueRequest request) {
+
         return projectRepository.findById(projectId)
                 .map(project -> {
-                    issue.setProject(project);
-
-                    if (issue.getStatus() == null) {
-                        issue.setStatus(IssueStatus.OPEN);
-                    }
+                    Issue issue = new Issue(
+                            null,
+                            request.getTitle(),
+                            request.getDescription(),
+                            IssueStatus.OPEN,
+                            project
+                    );
 
                     return issueRepository.save(issue);
                 });

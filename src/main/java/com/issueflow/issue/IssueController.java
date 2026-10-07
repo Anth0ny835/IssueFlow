@@ -42,9 +42,9 @@ public class IssueController {
     @PostMapping("/projects/{projectId}/issues")
     public ResponseEntity<Issue> createIssue(
             @PathVariable Long projectId,
-            @Valid @RequestBody Issue issue) {
+            @Valid @RequestBody CreateIssueRequest request) {
 
-        return issueService.createIssue(projectId, issue)
+        return issueService.createIssue(projectId, request)
                 .map(createdIssue ->
                         ResponseEntity
                                 .status(HttpStatus.CREATED)
