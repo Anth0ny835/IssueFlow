@@ -29,6 +29,15 @@ public class IssueController {
         return issueService.getIssues();
     }
 
+    @GetMapping("/projects/{projectId}/issues")
+    public ResponseEntity<List<IssueResponse>> getIssuesByProjectId(
+            @PathVariable Long projectId) {
+
+        return issueService.getIssuesByProjectId(projectId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @PutMapping("/issues/{id}/status")
     public ResponseEntity<IssueResponse> updateIssueStatus(
             @PathVariable Long id,
