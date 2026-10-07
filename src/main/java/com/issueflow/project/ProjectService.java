@@ -21,11 +21,14 @@ public class ProjectService {
         return projectRepository.findById(id);
     }
 
-    public Optional<Project> updateProject(Long id, Project projectDetails) {
+    public Optional<Project> updateProject(
+            Long id,
+            UpdateProjectRequest request) {
+
         return projectRepository.findById(id)
                 .map(existingProject -> {
-                    existingProject.setName(projectDetails.getName());
-                    existingProject.setDescription(projectDetails.getDescription());
+                    existingProject.setName(request.getName());
+                    existingProject.setDescription(request.getDescription());
 
                     return projectRepository.save(existingProject);
                 });

@@ -38,9 +38,9 @@ public class ProjectController {
     @PutMapping("/{id}")
     public ResponseEntity<Project> updateProject(
             @PathVariable Long id,
-            @Valid @RequestBody Project project) {
+            @Valid @RequestBody UpdateProjectRequest request) {
 
-        return projectService.updateProject(id, project)
+        return projectService.updateProject(id, request)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
