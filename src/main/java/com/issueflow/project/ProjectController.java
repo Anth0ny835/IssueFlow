@@ -24,19 +24,21 @@ public class ProjectController {
     }
 
     @GetMapping
-    public List<Project> getProjects() {
+    public List<ProjectResponse> getProjects() {
         return projectService.getProjects();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Project> getProjectById(@PathVariable Long id) {
+    public ResponseEntity<ProjectResponse> getProjectById(
+            @PathVariable Long id) {
+
         return projectService.getProjectById(id)
-            .map(ResponseEntity::ok)
-            .orElseGet(() -> ResponseEntity.notFound().build());
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Project> updateProject(
+    public ResponseEntity<ProjectResponse> updateProject(
             @PathVariable Long id,
             @Valid @RequestBody UpdateProjectRequest request) {
 
@@ -46,10 +48,11 @@ public class ProjectController {
     }
 
     @PostMapping
-    public ResponseEntity<Project> createProject(
+    public ResponseEntity<ProjectResponse> createProject(
             @Valid @RequestBody CreateProjectRequest request) {
 
-        Project createdProject = projectService.createProject(request);
+        ProjectResponse createdProject =
+                projectService.createProject(request);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

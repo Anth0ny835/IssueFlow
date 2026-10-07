@@ -13,15 +13,19 @@ public class ProjectService {
         this.projectRepository = projectRepository;
     }
 
-    public List<Project> getProjects() {
-        return projectRepository.findAll();
+    public List<ProjectResponse> getProjects() {
+        return projectRepository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
-    public Optional<Project> getProjectById(Long id) {
-        return projectRepository.findById(id);
+    public Optional<ProjectResponse> getProjectById(Long id) {
+        return projectRepository.findById(id)
+                .map(this::toResponse);
     }
 
-    public Optional<Project> updateProject(
+    public Optional<ProjectResponse> updateProject(
             Long id,
             UpdateProjectRequest request) {
 
@@ -30,17 +34,30 @@ public class ProjectService {
                     existingProject.setName(request.getName());
                     existingProject.setDescription(request.getDescription());
 
-                    return projectRepository.save(existingProject);
+                    Project savedProject =
+                            projectRepository.save(existingProject);
+
+                    return toResponse(savedProject);
                 });
     }
 
-    public Project createProject(CreateProjectRequest request) {
+    public ProjectResponse createProject(CreateProjectRequest request) {
         Project project = new Project(
                 null,
                 request.getName(),
                 request.getDescription()
         );
 
-        return projectRepository.save(project);
+        Project savedProject = projectRepository.save(project);
+
+        return toResponse(savedProject);
+    }
+
+    private ProjectResponse toResponse(Project project) {
+        return new ProjectResponse(
+                project.getId(),
+                project.getName(),
+                project.getDescription()
+        );
     }
 }
