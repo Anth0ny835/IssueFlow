@@ -31,7 +31,13 @@ public class ProjectService {
                 });
     }
 
-    public Project createProject(Project project) {
+    public Project createProject(CreateProjectRequest request) {
+        Project project = new Project(
+                null,
+                request.getName(),
+                request.getDescription()
+        );
+
         return projectRepository.save(project);
     }
 }
