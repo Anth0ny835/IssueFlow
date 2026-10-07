@@ -25,6 +25,18 @@ public class IssueService {
         return issueRepository.findAll();
     }
 
+    public Optional<Issue> updateIssueStatus(
+            Long id,
+            UpdateIssueStatusRequest request) {
+
+        return issueRepository.findById(id)
+                .map(issue -> {
+                    issue.setStatus(request.getStatus());
+
+                    return issueRepository.save(issue);
+                });
+    }
+
     public Optional<Issue> createIssue(Long projectId, Issue issue) {
         return projectRepository.findById(projectId)
                 .map(project -> {
