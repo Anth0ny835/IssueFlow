@@ -147,4 +147,34 @@ class ProjectServiceTest {
         verify(projectRepository).findById(projectId);
         verify(projectRepository, never()).save(any(Project.class));
     }
+    
+    @Test
+    void getProjects_shouldReturnProjectResponses() {
+        Project project1 = new Project(
+                1L,
+                "Customer Portal",
+                "Web portal for customers"
+        );
+
+        Project project2 = new Project(
+                2L,
+                "Internal Dashboard",
+                "Dashboard for internal operations"
+        );
+
+        when(projectRepository.findAll())
+                .thenReturn(java.util.List.of(project1, project2));
+
+        var result = projectService.getProjects();
+
+        assertEquals(2, result.size());
+
+        assertEquals(1L, result.get(0).getId());
+        assertEquals("Customer Portal", result.get(0).getName());
+
+        assertEquals(2L, result.get(1).getId());
+        assertEquals("Internal Dashboard", result.get(1).getName());
+
+        verify(projectRepository).findAll();
+    }
 }
