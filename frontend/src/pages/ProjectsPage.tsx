@@ -4,6 +4,7 @@ import type { FormEvent } from 'react'
 import {
   createProject,
   getProjects,
+  updateProject,
 } from '../api/projects'
 
 import type { Project } from '../types/project'
@@ -20,6 +21,15 @@ function ProjectsPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
+
+  const [editingProjectId, setEditingProjectId] =
+    useState<number | null>(null)
+
+  const [editName, setEditName] = useState('')
+  const [editDescription, setEditDescription] = useState('')
+
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [editError, setEditError] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadProjects() {
@@ -71,6 +81,63 @@ function ProjectsPage() {
       setFormError('Failed to create project')
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  function startEditing(project: Project) {
+    setEditingProjectId(project.id)
+    setEditName(project.name)
+    setEditDescription(project.description)
+    setEditError(null)
+  }
+
+  function cancelEditing() {
+    setEditingProjectId(null)
+    setEditName('')
+    setEditDescription('')
+    setEditError(null)
+  }
+
+  async function handleUpdate(
+    event: FormEvent<HTMLFormElement>,
+    projectId: number,
+  ) {
+    event.preventDefault()
+
+    setEditError(null)
+
+    const trimmedName = editName.trim()
+    const trimmedDescription = editDescription.trim()
+
+    if (!trimmedName) {
+      setEditError('Project name is required')
+      return
+    }
+
+    try {
+      setIsUpdating(true)
+
+      const updatedProject = await updateProject(
+        projectId,
+        {
+          name: trimmedName,
+          description: trimmedDescription,
+        },
+      )
+
+      setProjects((currentProjects) =>
+        currentProjects.map((project) =>
+          project.id === updatedProject.id
+            ? updatedProject
+            : project,
+        ),
+      )
+
+      cancelEditing()
+    } catch {
+      setEditError('Failed to update project')
+    } finally {
+      setIsUpdating(false)
     }
   }
 
@@ -176,8 +243,88 @@ function ProjectsPage() {
               className="project-card"
               key={project.id}
             >
-              <h2>{project.name}</h2>
-              <p>{project.description}</p>
+              {editingProjectId === project.id ? (
+                <form
+                  className="project-edit-form"
+                  onSubmit={(event) =>
+                    handleUpdate(event, project.id)
+                  }
+                >
+                  <div className="form-field">
+                    <label htmlFor={`edit-name-${project.id}`}>
+                      Project Name
+                    </label>
+
+                    <input
+                      id={`edit-name-${project.id}`}
+                      type="text"
+                      value={editName}
+                      onChange={(event) =>
+                        setEditName(event.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div className="form-field">
+                    <label
+                      htmlFor={`edit-description-${project.id}`}
+                    >
+                      Description
+                    </label>
+
+                    <textarea
+                      id={`edit-description-${project.id}`}
+                      value={editDescription}
+                      onChange={(event) =>
+                        setEditDescription(event.target.value)
+                      }
+                      rows={4}
+                    />
+                  </div>
+
+                  {editError && (
+                    <p className="form-error">
+                      {editError}
+                    </p>
+                  )}
+
+                  <div className="project-card-actions">
+                    <button
+                      className="primary-button"
+                      type="submit"
+                      disabled={isUpdating}
+                    >
+                      {isUpdating
+                        ? 'Saving...'
+                        : 'Save Changes'}
+                    </button>
+
+                    <button
+                      className="secondary-button"
+                      type="button"
+                      onClick={cancelEditing}
+                      disabled={isUpdating}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <>
+                  <h2>{project.name}</h2>
+                  <p>{project.description}</p>
+
+                  <div className="project-card-actions">
+                    <button
+                      className="secondary-button"
+                      type="button"
+                      onClick={() => startEditing(project)}
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </>
+              )}
             </article>
           ))}
         </div>
