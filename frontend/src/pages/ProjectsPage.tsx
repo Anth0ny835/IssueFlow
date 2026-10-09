@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import type { FormEvent } from 'react'
 
 import {
@@ -315,6 +316,13 @@ function ProjectsPage() {
                   <p>{project.description}</p>
 
                   <div className="project-card-actions">
+                    <Link
+                      className="primary-link"
+                      to={`/projects/${project.id}`}
+                    >
+                      View Project
+                    </Link>
+
                     <button
                       className="secondary-button"
                       type="button"
