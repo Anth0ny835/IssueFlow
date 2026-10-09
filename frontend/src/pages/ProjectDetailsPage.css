@@ -68,3 +68,81 @@
 .details-error {
   color: #b42318;
 }
+
+.issues-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.issues-section-header h2 {
+  margin: 0 0 4px;
+}
+
+.issues-section-header p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.issues-list {
+  display: grid;
+  gap: 16px;
+}
+
+.issue-card {
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f9fafb;
+}
+
+.issue-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.issue-number {
+  margin: 0 0 4px;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.issue-card h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.issue-description {
+  margin: 12px 0 0;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+.issue-status {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.issue-status-open {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.issue-status-in_progress {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.issue-status-resolved {
+  background: #dcfce7;
+  color: #166534;
+}
