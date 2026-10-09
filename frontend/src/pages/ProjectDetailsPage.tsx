@@ -2,10 +2,17 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { getProjectById } from '../api/projects'
-import { createIssue, getIssuesByProjectId } from '../api/issues'
+import {
+  createIssue,
+  getIssuesByProjectId,
+  updateIssueStatus,
+} from '../api/issues'
 
 import type { Project } from '../types/project'
-import type { Issue } from '../types/issue'
+import type {
+  Issue,
+  IssueStatus,
+} from '../types/issue'
 import type { FormEvent } from 'react'
 
 import './ProjectDetailsPage.css'
@@ -26,6 +33,12 @@ function ProjectDetailsPage() {
     useState(false)
 
   const [issueFormError, setIssueFormError] =
+    useState<string | null>(null)
+
+  const [updatingIssueId, setUpdatingIssueId] =
+    useState<number | null>(null)
+
+  const [statusError, setStatusError] =
     useState<string | null>(null)
 
   useEffect(() => {
@@ -98,6 +111,36 @@ function ProjectDetailsPage() {
       setIssueFormError('Failed to create issue')
     } finally {
       setIsCreatingIssue(false)
+    }
+  }
+
+  async function handleStatusChange(
+    issueId: number,
+    status: IssueStatus,
+  ) {
+    setStatusError(null)
+
+    try {
+      setUpdatingIssueId(issueId)
+
+      const updatedIssue = await updateIssueStatus(
+        issueId,
+        {
+          status,
+        },
+      )
+
+      setIssues((currentIssues) =>
+        currentIssues.map((issue) =>
+          issue.id === updatedIssue.id
+            ? updatedIssue
+            : issue,
+        ),
+      )
+    } catch {
+      setStatusError('Failed to update issue status')
+    } finally {
+      setUpdatingIssueId(null)
     }
   }
 
@@ -217,6 +260,12 @@ function ProjectDetailsPage() {
           </button>
         </form>
 
+        {statusError && (
+          <p className="status-error">
+            {statusError}
+          </p>
+        )}
+
         {issues.length === 0 ? (
           <p className="section-placeholder">
             No issues have been created for this project.
@@ -237,11 +286,30 @@ function ProjectDetailsPage() {
                     <h3>{issue.title}</h3>
                   </div>
 
-                  <span
-                    className={`issue-status issue-status-${issue.status.toLowerCase()}`}
+                  <select
+                    className={`issue-status-select issue-status-${issue.status.toLowerCase()}`}
+                    value={issue.status}
+                    onChange={(event) =>
+                      handleStatusChange(
+                        issue.id,
+                        event.target.value as IssueStatus,
+                      )
+                    }
+                    disabled={updatingIssueId !== null}
+                    aria-label={`Status for ${issue.title}`}
                   >
-                    {issue.status.replace('_', ' ')}
-                  </span>
+                    <option value="OPEN">
+                      OPEN
+                    </option>
+
+                    <option value="IN_PROGRESS">
+                      IN PROGRESS
+                    </option>
+
+                    <option value="RESOLVED">
+                      RESOLVED
+                    </option>
+                  </select>
                 </div>
 
                 <p className="issue-description">
