@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { getProjectById } from '../api/projects'
-import { getIssuesByProjectId } from '../api/issues'
+import { createIssue, getIssuesByProjectId } from '../api/issues'
 
 import type { Project } from '../types/project'
 import type { Issue } from '../types/issue'
+import type { FormEvent } from 'react'
 
 import './ProjectDetailsPage.css'
 
@@ -17,6 +18,15 @@ function ProjectDetailsPage() {
 
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const [issueTitle, setIssueTitle] = useState('')
+  const [issueDescription, setIssueDescription] = useState('')
+
+  const [isCreatingIssue, setIsCreatingIssue] =
+    useState(false)
+
+  const [issueFormError, setIssueFormError] =
+    useState<string | null>(null)
 
   useEffect(() => {
     async function loadProjectDetails() {
@@ -45,6 +55,51 @@ function ProjectDetailsPage() {
 
     loadProjectDetails()
   }, [projectId])
+
+  async function handleCreateIssue(
+    event: FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault()
+
+    setIssueFormError(null)
+
+    if (!project) {
+      setIssueFormError('Project is not available')
+      return
+    }
+
+    const trimmedTitle = issueTitle.trim()
+    const trimmedDescription = issueDescription.trim()
+
+    if (!trimmedTitle) {
+      setIssueFormError('Issue title is required')
+      return
+    }
+
+    try {
+      setIsCreatingIssue(true)
+
+      const newIssue = await createIssue(
+        project.id,
+        {
+          title: trimmedTitle,
+          description: trimmedDescription,
+        },
+      )
+
+      setIssues((currentIssues) => [
+        ...currentIssues,
+        newIssue,
+      ])
+
+      setIssueTitle('')
+      setIssueDescription('')
+    } catch {
+      setIssueFormError('Failed to create issue')
+    } finally {
+      setIsCreatingIssue(false)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -106,6 +161,61 @@ function ProjectDetailsPage() {
             </p>
           </div>
         </div>
+
+        <form
+          className="issue-form"
+          onSubmit={handleCreateIssue}
+        >
+          <div className="issue-form-fields">
+            <div className="issue-form-field">
+              <label htmlFor="issue-title">
+                Issue Title
+              </label>
+
+              <input
+                id="issue-title"
+                type="text"
+                value={issueTitle}
+                onChange={(event) =>
+                  setIssueTitle(event.target.value)
+                }
+                placeholder="e.g. Login button not working"
+              />
+            </div>
+
+            <div className="issue-form-field">
+              <label htmlFor="issue-description">
+                Description
+              </label>
+
+              <textarea
+                id="issue-description"
+                value={issueDescription}
+                onChange={(event) =>
+                  setIssueDescription(event.target.value)
+                }
+                placeholder="Describe the issue"
+                rows={4}
+              />
+            </div>
+          </div>
+
+          {issueFormError && (
+            <p className="issue-form-error">
+              {issueFormError}
+            </p>
+          )}
+
+          <button
+            className="create-issue-button"
+            type="submit"
+            disabled={isCreatingIssue}
+          >
+            {isCreatingIssue
+              ? 'Creating...'
+              : 'Create Issue'}
+          </button>
+        </form>
 
         {issues.length === 0 ? (
           <p className="section-placeholder">
