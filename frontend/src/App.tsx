@@ -1,14 +1,15 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
 
-import ProjectsPage from './pages/ProjectsPage'
+import DashboardPage from './pages/DashboardPage'
 import ProjectDetailsPage from './pages/ProjectDetailsPage'
+import ProjectsPage from './pages/ProjectsPage'
 
 function App() {
   return (
     <Routes>
       <Route
         path="/"
-        element={<Navigate to="/projects" replace />}
+        element={<DashboardPage />}
       />
 
       <Route
