@@ -1,5 +1,5 @@
 .project-details-page {
-  width: min(1000px, calc(100% - 48px));
+  width: min(1120px, calc(100% - 48px));
   margin: 0 auto;
   padding: 48px 0;
 }
@@ -274,5 +274,16 @@
 @keyframes loading-spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 640px) {
+  .project-details-page {
+    width: calc(100% - 32px);
+    padding: 32px 0;
+  }
+
+  .issue-card-header {
+    flex-direction: column;
   }
 }

@@ -1,0 +1,155 @@
+.app-shell {
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+.app-sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 10;
+
+  display: flex;
+  flex-direction: column;
+
+  width: 240px;
+  padding: 24px 18px;
+
+  border-right: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 8px 24px;
+}
+
+.app-brand-mark {
+  display: grid;
+  place-items: center;
+
+  width: 40px;
+  height: 40px;
+
+  border-radius: 10px;
+  background: #1f2937;
+
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.app-brand p {
+  margin: 0 0 2px;
+  color: #111827;
+  font-weight: 700;
+}
+
+.app-brand span {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.app-navigation {
+  display: grid;
+  gap: 6px;
+}
+
+.nav-link {
+  padding: 11px 12px;
+  border-radius: 8px;
+
+  color: #6b7280;
+  font-weight: 600;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.nav-link:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.nav-link-active {
+  background: #eef2ff;
+  color: #3730a3;
+}
+
+.app-sidebar-footer {
+  margin-top: auto;
+  padding: 20px 8px 0;
+  border-top: 1px solid #f3f4f6;
+}
+
+.app-sidebar-footer p {
+  margin: 0 0 4px;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.app-sidebar-footer span {
+  display: block;
+  color: #9ca3af;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.app-content {
+  min-height: 100vh;
+  margin-left: 240px;
+}
+
+@media (max-width: 760px) {
+  .app-sidebar {
+    position: sticky;
+    top: 0;
+    bottom: auto;
+
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+    padding: 12px 16px;
+
+    border-right: 0;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .app-brand {
+    padding: 0;
+  }
+
+  .app-brand-mark {
+    width: 36px;
+    height: 36px;
+  }
+
+  .app-brand span {
+    display: none;
+  }
+
+  .app-navigation {
+    display: flex;
+    gap: 4px;
+  }
+
+  .nav-link {
+    padding: 9px 10px;
+    font-size: 14px;
+  }
+
+  .app-sidebar-footer {
+    display: none;
+  }
+
+  .app-content {
+    margin-left: 0;
+  }
+}

@@ -1,5 +1,5 @@
 .projects-page {
-  width: min(1100px, calc(100% - 48px));
+  width: min(1120px, calc(100% - 48px));
   margin: 0 auto;
   padding: 48px 0;
 }
@@ -29,6 +29,14 @@
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   background: #ffffff;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.project-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgb(15 23 42 / 0.06);
 }
 
 .project-card h2 {
@@ -210,5 +218,12 @@
 @keyframes loading-spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 640px) {
+  .projects-page {
+    width: calc(100% - 32px);
+    padding: 32px 0;
   }
 }

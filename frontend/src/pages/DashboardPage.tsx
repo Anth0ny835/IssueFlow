@@ -93,6 +93,10 @@ function DashboardPage() {
     (issue) => issue.status === 'RESOLVED',
   ).length
 
+  const recentIssues = [...issues]
+    .sort((a, b) => b.id - a.id)
+    .slice(0, 5)
+
   return (
     <main className="dashboard-page">
       <header className="dashboard-header">
@@ -142,6 +146,63 @@ function DashboardPage() {
           <p>Resolved</p>
           <strong>{resolvedIssues}</strong>
         </article>
+      </section>
+
+      <section className="recent-issues-section">
+        <div className="recent-issues-header">
+          <div>
+            <h2>Recent Issues</h2>
+
+            <p>
+              Latest issues across all projects.
+            </p>
+          </div>
+        </div>
+
+        {recentIssues.length === 0 ? (
+          <div className="dashboard-empty-state">
+            <h3>No issues yet</h3>
+
+            <p>
+              Create an issue from one of your projects.
+            </p>
+
+            <Link
+              className="dashboard-link"
+              to="/projects"
+            >
+              View Projects
+            </Link>
+          </div>
+        ) : (
+          <div className="recent-issues-list">
+            {recentIssues.map((issue) => (
+              <Link
+                className="recent-issue-row"
+                key={issue.id}
+                to={`/projects/${issue.projectId}`}
+              >
+                <div className="recent-issue-content">
+                  <p className="recent-issue-meta">
+                    Issue #{issue.id} · {issue.projectName}
+                  </p>
+
+                  <h3>{issue.title}</h3>
+
+                  <p className="recent-issue-description">
+                    {issue.description}
+                  </p>
+                </div>
+
+                <span
+                  className={`dashboard-status dashboard-status-${issue.status.toLowerCase()}`}
+                >
+                  {issue.status.replace('_', ' ')}
+                </span>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
     </main>
   )
