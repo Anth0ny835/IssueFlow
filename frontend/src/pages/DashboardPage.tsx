@@ -16,8 +16,13 @@ function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const [reloadKey, setReloadKey] = useState(0)
+
   useEffect(() => {
     async function loadDashboard() {
+      setIsLoading(true)
+      setError(null)
+
       try {
         const [projectData, issueData] = await Promise.all([
           getProjects(),
@@ -27,21 +32,29 @@ function DashboardPage() {
         setProjects(projectData)
         setIssues(issueData)
       } catch {
-        setError('Failed to load dashboard')
+        setError(
+          'Unable to load dashboard data. Please try again.',
+        )
       } finally {
         setIsLoading(false)
       }
     }
 
     loadDashboard()
-  }, [])
+  }, [reloadKey])
 
   if (isLoading) {
     return (
       <main className="dashboard-page">
-        <p className="dashboard-message">
-          Loading dashboard...
-        </p>
+        <section className="dashboard-state-card">
+          <div className="loading-indicator" />
+
+          <h1>Loading dashboard</h1>
+
+          <p>
+            Fetching the latest project and issue data...
+          </p>
+        </section>
       </main>
     )
   }
@@ -49,9 +62,21 @@ function DashboardPage() {
   if (error) {
     return (
       <main className="dashboard-page">
-        <p className="dashboard-message dashboard-error">
-          {error}
-        </p>
+        <section className="dashboard-state-card">
+          <h1>Unable to load dashboard</h1>
+
+          <p>{error}</p>
+
+          <button
+            className="dashboard-retry-button"
+            type="button"
+            onClick={() =>
+              setReloadKey((current) => current + 1)
+            }
+          >
+            Try Again
+          </button>
+        </section>
       </main>
     )
   }

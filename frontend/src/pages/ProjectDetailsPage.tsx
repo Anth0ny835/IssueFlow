@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
-import { getProjectById } from '../api/projects'
+import { ApiError } from '../api/http'
+
 import {
   createIssue,
   getIssuesByProjectId,
   updateIssueStatus,
 } from '../api/issues'
+
+import { getProjectById } from '../api/projects'
 
 import type { Project } from '../types/project'
 import type {
@@ -59,8 +62,15 @@ function ProjectDetailsPage() {
 
         setProject(projectData)
         setIssues(issuesData)
-      } catch {
-        setError('Failed to load project')
+      } catch (error) {
+        if (
+          error instanceof ApiError &&
+          error.status === 404
+        ) {
+          setError('Project not found')
+        } else {
+          setError('Unable to load project. Please try again.')
+        }
       } finally {
         setIsLoading(false)
       }
@@ -147,9 +157,15 @@ function ProjectDetailsPage() {
   if (isLoading) {
     return (
       <main className="project-details-page">
-        <p className="details-message">
-          Loading project...
-        </p>
+        <section className="details-state-card">
+          <div className="loading-indicator" />
+
+          <h1>Loading project</h1>
+
+          <p>
+            Fetching project details and issues...
+          </p>
+        </section>
       </main>
     )
   }
@@ -157,16 +173,22 @@ function ProjectDetailsPage() {
   if (error) {
     return (
       <main className="project-details-page">
-        <p className="details-message details-error">
-          {error}
-        </p>
+        <section className="details-state-card">
+          <h1>
+            {error === 'Project not found'
+              ? 'Project not found'
+              : 'Something went wrong'}
+          </h1>
 
-        <Link
-          className="back-link"
-          to="/projects"
-        >
-          Back to Projects
-        </Link>
+          <p>{error}</p>
+
+          <Link
+            className="primary-details-link"
+            to="/projects"
+          >
+            Back to Projects
+          </Link>
+        </section>
       </main>
     )
   }

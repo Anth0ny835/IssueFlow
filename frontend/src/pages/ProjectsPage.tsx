@@ -17,6 +17,8 @@ function ProjectsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const [reloadKey, setReloadKey] = useState(0)
+
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
 
@@ -34,19 +36,24 @@ function ProjectsPage() {
 
   useEffect(() => {
     async function loadProjects() {
+      setIsLoading(true)
+      setError(null)
+
       try {
         const data = await getProjects()
 
         setProjects(data)
-      } catch (err) {
-        setError('Failed to load projects')
+      } catch {
+        setError(
+          'Unable to load projects. Please try again.',
+        )
       } finally {
         setIsLoading(false)
       }
     }
 
     loadProjects()
-  }, [])
+  }, [reloadKey])
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>,
@@ -145,9 +152,15 @@ function ProjectsPage() {
   if (isLoading) {
     return (
       <main className="projects-page">
-        <p className="projects-message">
-          Loading projects...
-        </p>
+        <section className="projects-state-card">
+          <div className="loading-indicator" />
+
+          <h1>Loading projects</h1>
+
+          <p>
+            Fetching projects from IssueFlow...
+          </p>
+        </section>
       </main>
     )
   }
@@ -155,9 +168,21 @@ function ProjectsPage() {
   if (error) {
     return (
       <main className="projects-page">
-        <p className="projects-message projects-error">
-          {error}
-        </p>
+        <section className="projects-state-card">
+          <h1>Unable to load projects</h1>
+
+          <p>{error}</p>
+
+          <button
+            className="primary-button"
+            type="button"
+            onClick={() =>
+              setReloadKey((current) => current + 1)
+            }
+          >
+            Try Again
+          </button>
+        </section>
       </main>
     )
   }
@@ -234,9 +259,13 @@ function ProjectsPage() {
       </section>
 
       {projects.length === 0 ? (
-        <p className="projects-message">
-          No projects found.
-        </p>
+        <section className="projects-empty-state">
+          <h2>No projects yet</h2>
+
+          <p>
+            Create your first project using the form above.
+          </p>
+        </section>
       ) : (
         <div className="projects-grid">
           {projects.map((project) => (
