@@ -153,3 +153,56 @@
     margin-left: 0;
   }
 }
+
+.sidebar-user {
+  display: grid;
+  gap: 12px;
+
+  margin-top: auto;
+  padding-top: 20px;
+
+  border-top: 1px solid #e5e7eb;
+}
+
+.sidebar-user-info {
+  display: grid;
+  gap: 4px;
+}
+
+.sidebar-user-label {
+  color: #9ca3af;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sidebar-user-email {
+  overflow: hidden;
+
+  color: #374151;
+  font-size: 13px;
+  font-weight: 600;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-logout-button {
+  width: 100%;
+  padding: 9px 12px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+
+  background: #ffffff;
+  color: #374151;
+
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.sidebar-logout-button:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}

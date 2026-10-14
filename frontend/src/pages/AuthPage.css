@@ -1,0 +1,158 @@
+.login-page {
+  display: grid;
+  place-items: center;
+
+  min-height: 100vh;
+  padding: 32px 16px;
+
+  background: #f5f7fa;
+}
+
+.login-card {
+  width: min(420px, 100%);
+  padding: 32px;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+
+  background: #ffffff;
+
+  box-shadow: 0 16px 40px rgb(15 23 42 / 0.06);
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  margin-bottom: 32px;
+}
+
+.login-brand-mark {
+  display: grid;
+  place-items: center;
+
+  width: 42px;
+  height: 42px;
+
+  border-radius: 10px;
+  background: #1f2937;
+
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.login-brand p {
+  margin: 0 0 2px;
+
+  color: #111827;
+  font-weight: 700;
+}
+
+.login-brand span {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.login-header {
+  margin-bottom: 24px;
+}
+
+.login-header h1 {
+  margin: 0 0 8px;
+
+  color: #111827;
+  font-size: 28px;
+}
+
+.login-header p {
+  margin: 0;
+
+  color: #6b7280;
+}
+
+.login-form {
+  display: grid;
+  gap: 18px;
+}
+
+.login-field {
+  display: grid;
+  gap: 8px;
+}
+
+.login-field label {
+  color: #374151;
+  font-weight: 600;
+}
+
+.login-field input {
+  width: 100%;
+  padding: 11px 12px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+
+  background: #ffffff;
+  color: #111827;
+}
+
+.login-field input:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+  border-color: #2563eb;
+}
+
+.login-error {
+  margin: 0;
+  padding: 12px 14px;
+
+  border-radius: 8px;
+
+  background: #fef2f2;
+  color: #b42318;
+
+  font-size: 14px;
+}
+
+.login-button {
+  width: 100%;
+  padding: 11px 16px;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: #1f2937;
+  color: #ffffff;
+
+  font-weight: 700;
+}
+
+.login-button:hover:not(:disabled) {
+  background: #111827;
+}
+
+.login-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.auth-switch {
+  margin: 0;
+
+  color: #6b7280;
+  font-size: 14px;
+  text-align: center;
+}
+
+.auth-switch a {
+  color: #2563eb;
+
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-switch a:hover {
+  text-decoration: underline;
+}
