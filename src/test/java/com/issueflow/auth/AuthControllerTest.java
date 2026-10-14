@@ -5,8 +5,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.never;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 
 import java.util.Optional;
 
@@ -18,143 +20,337 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.mock.web.MockHttpSession;
 
 import com.issueflow.exception.GlobalExceptionHandler;
 
 @ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
 
-  @Mock
-  private AuthService authService;
+	@Mock
+	private AuthService authService;
 
-  private MockMvc mockMvc;
+	private MockMvc mockMvc;
 
-  @BeforeEach
-  void setUp() {
-    AuthController authController = new AuthController(authService);
+	@BeforeEach
+	void setUp() {
+		AuthController authController = new AuthController(authService);
 
-    mockMvc = MockMvcBuilders
-        .standaloneSetup(authController)
-        .setControllerAdvice(
-            new GlobalExceptionHandler())
-        .build();
-  }
+		mockMvc = MockMvcBuilders
+				.standaloneSetup(authController)
+				.setControllerAdvice(
+						new GlobalExceptionHandler())
+				.build();
+	}
 
-  @Test
-  void register_whenRequestIsValid_shouldReturn201AndUser()
-      throws Exception {
+	@Test
+	void register_whenRequestIsValid_shouldReturn201AndUser()
+			throws Exception {
 
-    AuthUserResponse response = new AuthUserResponse(
-        1L,
-        "anthony@example.com");
+		AuthUserResponse response = new AuthUserResponse(
+				1L,
+				"anthony@example.com");
 
-    when(
-        authService.register(
-            any(RegisterRequest.class)))
-        .thenReturn(Optional.of(response));
+		when(
+				authService.register(
+						any(RegisterRequest.class)))
+				.thenReturn(Optional.of(response));
 
-    mockMvc.perform(
-        post("/api/auth/register")
-            .contentType(
-                MediaType.APPLICATION_JSON)
-            .content("""
-                {
-                  "email": "anthony@example.com",
-                  "password": "password123"
-                }
-                """))
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.id").value(1))
-        .andExpect(
-            jsonPath("$.email")
-                .value(
-                    "anthony@example.com"));
+		mockMvc.perform(
+				post("/api/auth/register")
+						.contentType(
+								MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "email": "anthony@example.com",
+								  "password": "password123"
+								}
+								"""))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.id").value(1))
+				.andExpect(
+						jsonPath("$.email")
+								.value(
+										"anthony@example.com"));
 
-    verify(authService)
-        .register(
-            any(RegisterRequest.class));
-  }
+		verify(authService)
+				.register(
+						any(RegisterRequest.class));
+	}
 
-  @Test
-  void register_whenEmailAlreadyExists_shouldReturn409()
-      throws Exception {
+	@Test
+	void register_whenEmailAlreadyExists_shouldReturn409()
+			throws Exception {
 
-    when(
-        authService.register(
-            any(RegisterRequest.class)))
-        .thenReturn(Optional.empty());
+		when(
+				authService.register(
+						any(RegisterRequest.class)))
+				.thenReturn(Optional.empty());
 
-    mockMvc.perform(
-        post("/api/auth/register")
-            .contentType(
-                MediaType.APPLICATION_JSON)
-            .content("""
-                {
-                  "email": "anthony@example.com",
-                  "password": "password123"
-                }
-                """))
-        .andExpect(status().isConflict());
+		mockMvc.perform(
+				post("/api/auth/register")
+						.contentType(
+								MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "email": "anthony@example.com",
+								  "password": "password123"
+								}
+								"""))
+				.andExpect(status().isConflict());
 
-    verify(authService)
-        .register(
-            any(RegisterRequest.class));
-  }
+		verify(authService)
+				.register(
+						any(RegisterRequest.class));
+	}
 
-  @Test
-  void register_whenEmailIsInvalid_shouldReturn400ValidationError()
-      throws Exception {
+	@Test
+	void register_whenEmailIsInvalid_shouldReturn400ValidationError()
+			throws Exception {
 
-    mockMvc.perform(
-        post("/api/auth/register")
-            .contentType(
-                MediaType.APPLICATION_JSON)
-            .content("""
-                {
-                  "email": "not-an-email",
-                  "password": "password123"
-                }
-                """))
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.status").value(400))
-        .andExpect(
-            jsonPath("$.error")
-                .value("Validation failed"))
-        .andExpect(
-            jsonPath("$.fieldErrors.email")
-                .value("Email must be valid"));
+		mockMvc.perform(
+				post("/api/auth/register")
+						.contentType(
+								MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "email": "not-an-email",
+								  "password": "password123"
+								}
+								"""))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.status").value(400))
+				.andExpect(
+						jsonPath("$.error")
+								.value("Validation failed"))
+				.andExpect(
+						jsonPath("$.fieldErrors.email")
+								.value("Email must be valid"));
 
-    verify(authService, never())
-        .register(
-            any(RegisterRequest.class));
-  }
+		verify(authService, never())
+				.register(
+						any(RegisterRequest.class));
+	}
 
-  @Test
-  void register_whenPasswordIsTooShort_shouldReturn400ValidationError()
-      throws Exception {
+	@Test
+	void register_whenPasswordIsTooShort_shouldReturn400ValidationError()
+			throws Exception {
 
-    mockMvc.perform(
-        post("/api/auth/register")
-            .contentType(
-                MediaType.APPLICATION_JSON)
-            .content("""
-                {
-                  "email": "anthony@example.com",
-                  "password": "123"
-                }
-                """))
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.status").value(400))
-        .andExpect(
-            jsonPath("$.error")
-                .value("Validation failed"))
-        .andExpect(
-            jsonPath("$.fieldErrors.password")
-                .value(
-                    "Password must be at least 8 characters"));
+		mockMvc.perform(
+				post("/api/auth/register")
+						.contentType(
+								MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "email": "anthony@example.com",
+								  "password": "123"
+								}
+								"""))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.status").value(400))
+				.andExpect(
+						jsonPath("$.error")
+								.value("Validation failed"))
+				.andExpect(
+						jsonPath("$.fieldErrors.password")
+								.value(
+										"Password must be at least 8 characters"));
 
-    verify(authService, never())
-        .register(
-            any(RegisterRequest.class));
-  }
+		verify(authService, never())
+				.register(
+						any(RegisterRequest.class));
+	}
+
+	@Test
+	void login_whenCredentialsAreCorrect_shouldReturn200AndCreateSession()
+			throws Exception {
+
+		AuthUserResponse response = new AuthUserResponse(
+				1L,
+				"anthony@example.com");
+
+		when(
+				authService.login(
+						any(LoginRequest.class)))
+				.thenReturn(Optional.of(response));
+
+		mockMvc.perform(
+				post("/api/auth/login")
+						.contentType(
+								MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "email": "anthony@example.com",
+								  "password": "password123"
+								}
+								"""))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(1))
+				.andExpect(
+						jsonPath("$.email")
+								.value(
+										"anthony@example.com"))
+				.andExpect(
+						request()
+								.sessionAttribute(
+										"userId",
+										1L));
+
+		verify(authService)
+				.login(
+						any(LoginRequest.class));
+	}
+
+	@Test
+	void login_whenCredentialsAreIncorrect_shouldReturn401()
+			throws Exception {
+
+		when(
+				authService.login(
+						any(LoginRequest.class)))
+				.thenReturn(Optional.empty());
+
+		mockMvc.perform(
+				post("/api/auth/login")
+						.contentType(
+								MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "email": "anthony@example.com",
+								  "password": "wrongpassword"
+								}
+								"""))
+				.andExpect(status().isUnauthorized())
+				.andExpect(
+						request()
+								.sessionAttributeDoesNotExist(
+										"userId"));
+
+		verify(authService)
+				.login(
+						any(LoginRequest.class));
+	}
+
+	@Test
+	void login_whenEmailIsInvalid_shouldReturn400ValidationError()
+			throws Exception {
+
+		mockMvc.perform(
+				post("/api/auth/login")
+						.contentType(
+								MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "email": "not-an-email",
+								  "password": "password123"
+								}
+								"""))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.status").value(400))
+				.andExpect(
+						jsonPath("$.error")
+								.value("Validation failed"))
+				.andExpect(
+						jsonPath("$.fieldErrors.email")
+								.value("Email must be valid"));
+
+		verify(authService, never())
+				.login(
+						any(LoginRequest.class));
+	}
+
+	@Test
+	void getCurrentUser_whenSessionIsAuthenticated_shouldReturn200AndUser()
+			throws Exception {
+
+		Long userId = 1L;
+
+		MockHttpSession session = new MockHttpSession();
+
+		session.setAttribute(
+				"userId",
+				userId);
+
+		AuthUserResponse response = new AuthUserResponse(
+				userId,
+				"anthony@example.com");
+
+		when(authService.getUserById(userId))
+				.thenReturn(Optional.of(response));
+
+		mockMvc.perform(
+				get("/api/auth/me")
+						.session(session))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(1))
+				.andExpect(
+						jsonPath("$.email")
+								.value(
+										"anthony@example.com"));
+
+		verify(authService).getUserById(userId);
+	}
+
+	@Test
+	void getCurrentUser_whenSessionDoesNotExist_shouldReturn401()
+			throws Exception {
+
+		mockMvc.perform(
+				get("/api/auth/me"))
+				.andExpect(status().isUnauthorized());
+
+		verify(authService, never())
+				.getUserById(any(Long.class));
+	}
+
+	@Test
+	void getCurrentUser_whenSessionUserDoesNotExist_shouldReturn401()
+			throws Exception {
+
+		Long userId = 999L;
+
+		MockHttpSession session = new MockHttpSession();
+
+		session.setAttribute(
+				"userId",
+				userId);
+
+		when(authService.getUserById(userId))
+				.thenReturn(Optional.empty());
+
+		mockMvc.perform(
+				get("/api/auth/me")
+						.session(session))
+				.andExpect(status().isUnauthorized());
+
+		verify(authService).getUserById(userId);
+	}
+
+	@Test
+	void logout_whenSessionExists_shouldReturn204AndInvalidateSession()
+			throws Exception {
+
+		MockHttpSession session = new MockHttpSession();
+
+		session.setAttribute(
+				"userId",
+				1L);
+
+		mockMvc.perform(
+				post("/api/auth/logout")
+						.session(session))
+				.andExpect(status().isNoContent());
+
+		org.junit.jupiter.api.Assertions.assertTrue(
+				session.isInvalid());
+	}
+
+	@Test
+	void logout_whenSessionDoesNotExist_shouldReturn204()
+			throws Exception {
+
+		mockMvc.perform(
+				post("/api/auth/logout"))
+				.andExpect(status().isNoContent());
+	}
 }
