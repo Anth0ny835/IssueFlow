@@ -1,0 +1,55 @@
+services:
+  postgres:
+    image: postgres:18
+
+    environment:
+      POSTGRES_DB: issueflow
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${ISSUEFLOW_DB_PASSWORD}
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U postgres -d issueflow"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    environment:
+      ISSUEFLOW_DB_URL: jdbc:postgresql://postgres:5432/issueflow
+      ISSUEFLOW_DB_USERNAME: postgres
+      ISSUEFLOW_DB_PASSWORD: ${ISSUEFLOW_DB_PASSWORD}
+
+    ports:
+      - "8080:8080"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+
+    ports:
+      - "3000:80"
+
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
