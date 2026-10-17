@@ -9,7 +9,6 @@ import RegisterPage from './pages/RegisterPage'
 import ProtectedRoute from './auth/ProtectedRoute'
 
 function App() {
-  const pipelineFailureTest: number = 'fail'
   return (
     <Routes>
       <Route
