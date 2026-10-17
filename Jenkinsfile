@@ -36,6 +36,20 @@ pipeline {
                 }
             }
         }
+
+				stage('Docker Build') {
+						steps {
+								sh '''
+										docker build \
+												-t issueflow-backend:ci \
+												.
+
+										docker build \
+												-t issueflow-frontend:ci \
+												./frontend
+								'''
+						}
+				}
     }
 
     post {
