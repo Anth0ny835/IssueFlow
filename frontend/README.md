@@ -73,3 +73,4 @@ export default defineConfig([
 ])
 
 ```
+CI pipeline validated with Jenkins.
