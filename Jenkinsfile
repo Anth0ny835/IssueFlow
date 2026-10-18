@@ -50,6 +50,50 @@ pipeline {
 								'''
 						}
 				}
+
+				stage('Deploy') {
+					steps {
+						withCredentials([
+							string(
+								credentialsId: 'issueflow-db-password',
+								variable: 'ISSUEFLOW_DB_PASSWORD'
+							)
+						]) {
+							sh '''
+								docker compose \
+									-p issueflow \
+									up -d --no-build
+							'''
+						}
+					}
+				}
+
+				stage('Verify Deployment') {
+					steps {
+						sh '''
+							echo "Waiting for IssueFlow backend..."
+
+							for i in $(seq 1 12); do
+								if curl \
+									--fail \
+									--silent \
+									--show-error \
+									http://host.docker.internal:8080/api/projects \
+									> /dev/null
+								then
+									echo "IssueFlow backend is responding."
+									exit 0
+								fi
+
+								echo "Backend not ready yet. Retrying..."
+								sleep 5
+							done
+
+							echo "IssueFlow backend failed deployment verification."
+							exit 1
+						'''
+					}
+				}
     }
 
     post {
