@@ -1,0 +1,22 @@
+services:
+  backend:
+    image: issueflow-backend:ci
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      ISSUEFLOW_DB_URL: ${ISSUEFLOW_DB_URL:?ISSUEFLOW_DB_URL is required}
+      ISSUEFLOW_DB_USERNAME: postgres
+      ISSUEFLOW_DB_PASSWORD: ${ISSUEFLOW_DB_PASSWORD:?ISSUEFLOW_DB_PASSWORD is required}
+    ports:
+      - "8080:8080"
+
+  frontend:
+    image: issueflow-frontend:ci
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
