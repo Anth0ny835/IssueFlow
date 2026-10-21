@@ -31,7 +31,7 @@ services:
       dockerfile: Dockerfile
 
     environment:
-      ISSUEFLOW_DB_URL: jdbc:postgresql://postgres:5432/issueflow
+      ISSUEFLOW_DB_URL: ${ISSUEFLOW_DB_URL:-jdbc:postgresql://postgres:5432/issueflow}
       ISSUEFLOW_DB_USERNAME: postgres
       ISSUEFLOW_DB_PASSWORD: ${ISSUEFLOW_DB_PASSWORD}
 
