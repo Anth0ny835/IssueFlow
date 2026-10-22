@@ -51,6 +51,33 @@ pipeline {
 						}
 				}
 
+				stage('Test EC2 SSH') {
+						steps {
+								withCredentials([
+										sshUserPrivateKey(
+												credentialsId: 'issueflow-ec2-ssh',
+												keyFileVariable: 'EC2_SSH_KEY',
+												usernameVariable: 'EC2_SSH_USER'
+										),
+										string(
+												credentialsId: 'issueflow-ec2-host',
+												variable: 'EC2_HOST'
+										)
+								]) {
+										sh '''
+												mkdir -p ~/.ssh
+												chmod 700 ~/.ssh
+
+												ssh \
+														-i "$EC2_SSH_KEY" \
+														-o StrictHostKeyChecking=accept-new \
+														"$EC2_SSH_USER@$EC2_HOST" \
+														'echo "Jenkins SSH to EC2: OK"'
+										'''
+								}
+						}
+				}
+
 				stage('Deploy') {
 					steps {
 						withCredentials([
