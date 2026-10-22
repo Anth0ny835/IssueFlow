@@ -1,126 +1,142 @@
-import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
-
-import { ApiError } from '../api/http'
-
+import { useEffect, useState, type FormEvent } from "react";
+import { Link, useParams } from "react-router-dom";
+import { getProjectById, type Project } from "../api/projects";
 import {
   createIssue,
   getIssuesByProjectId,
   updateIssueStatus,
-} from '../api/issues'
+} from "../api/issues";
+import type { Issue, IssueStatus } from "../types/issue";
+import "./ProjectDetailsPage.css";
 
-import { getProjectById } from '../api/projects'
-
-import type { Project } from '../types/project'
-import type {
-  Issue,
-  IssueStatus,
-} from '../types/issue'
-import type { FormEvent } from 'react'
-
-import './ProjectDetailsPage.css'
+const issueStatuses: IssueStatus[] = [
+  "OPEN",
+  "IN_PROGRESS",
+  "RESOLVED",
+];
 
 function ProjectDetailsPage() {
-  const { projectId } = useParams()
+  const { projectId } = useParams();
 
-  const [project, setProject] = useState<Project | null>(null)
-  const [issues, setIssues] = useState<Issue[]>([])
+  const [project, setProject] = useState<Project | null>(null);
+  const [issues, setIssues] = useState<Issue[]>([]);
 
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const [issueTitle, setIssueTitle] = useState('')
-  const [issueDescription, setIssueDescription] = useState('')
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [issueTitle, setIssueTitle] = useState("");
+  const [issueDescription, setIssueDescription] = useState("");
+  const [isCreatingIssue, setIsCreatingIssue] = useState(false);
+  const [issueFormError, setIssueFormError] = useState("");
 
-  const [isCreatingIssue, setIsCreatingIssue] =
-    useState(false)
-
-  const [issueFormError, setIssueFormError] =
-    useState<string | null>(null)
-
-  const [updatingIssueId, setUpdatingIssueId] =
-    useState<number | null>(null)
-
-  const [statusError, setStatusError] =
-    useState<string | null>(null)
+  const [updatingIssueId, setUpdatingIssueId] = useState<number | null>(
+    null,
+  );
+  const [statusError, setStatusError] = useState("");
 
   useEffect(() => {
     async function loadProjectDetails() {
-      const id = Number(projectId)
+      const numericProjectId = Number(projectId);
 
-      if (!projectId || Number.isNaN(id)) {
-        setError('Invalid project ID')
-        setIsLoading(false)
-        return
+      if (!projectId || Number.isNaN(numericProjectId)) {
+        setError("Invalid project");
+        setIsLoading(false);
+        return;
       }
 
       try {
-        const [projectData, issuesData] = await Promise.all([
-          getProjectById(id),
-          getIssuesByProjectId(id),
-        ])
+        const [projectData, issueData] = await Promise.all([
+          getProjectById(numericProjectId),
+          getIssuesByProjectId(numericProjectId),
+        ]);
 
-        setProject(projectData)
-        setIssues(issuesData)
-      } catch (error) {
-        if (
-          error instanceof ApiError &&
-          error.status === 404
-        ) {
-          setError('Project not found')
-        } else {
-          setError('Unable to load project. Please try again.')
-        }
+        setProject(projectData);
+        setIssues(issueData);
+      } catch {
+        setError("Failed to load project");
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
     }
 
-    loadProjectDetails()
-  }, [projectId])
+    loadProjectDetails();
+  }, [projectId]);
+
+  useEffect(() => {
+    if (!isCreateModalOpen) {
+      return;
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        closeCreateIssueModal();
+      }
+    }
+
+    document.addEventListener("keydown", handleEscape);
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "";
+    };
+  }, [isCreateModalOpen, isCreatingIssue]);
+
+  function openCreateIssueModal() {
+    setIssueFormError("");
+    setIsCreateModalOpen(true);
+  }
+
+  function closeCreateIssueModal() {
+    if (isCreatingIssue) {
+      return;
+    }
+
+    setIsCreateModalOpen(false);
+    setIssueTitle("");
+    setIssueDescription("");
+    setIssueFormError("");
+  }
 
   async function handleCreateIssue(
     event: FormEvent<HTMLFormElement>,
   ) {
-    event.preventDefault()
-
-    setIssueFormError(null)
+    event.preventDefault();
 
     if (!project) {
-      setIssueFormError('Project is not available')
-      return
+      return;
     }
 
-    const trimmedTitle = issueTitle.trim()
-    const trimmedDescription = issueDescription.trim()
+    const trimmedTitle = issueTitle.trim();
+    const trimmedDescription = issueDescription.trim();
 
     if (!trimmedTitle) {
-      setIssueFormError('Issue title is required')
-      return
+      setIssueFormError("Issue title is required");
+      return;
     }
 
     try {
-      setIsCreatingIssue(true)
+      setIsCreatingIssue(true);
+      setIssueFormError("");
 
-      const newIssue = await createIssue(
-        project.id,
-        {
-          title: trimmedTitle,
-          description: trimmedDescription,
-        },
-      )
+      const createdIssue = await createIssue(project.id, {
+        title: trimmedTitle,
+        description: trimmedDescription,
+      });
 
       setIssues((currentIssues) => [
+        createdIssue,
         ...currentIssues,
-        newIssue,
-      ])
+      ]);
 
-      setIssueTitle('')
-      setIssueDescription('')
+      setIssueTitle("");
+      setIssueDescription("");
+      setIsCreateModalOpen(false);
     } catch {
-      setIssueFormError('Failed to create issue')
+      setIssueFormError("Failed to create issue");
     } finally {
-      setIsCreatingIssue(false)
+      setIsCreatingIssue(false);
     }
   }
 
@@ -128,222 +144,290 @@ function ProjectDetailsPage() {
     issueId: number,
     status: IssueStatus,
   ) {
-    setStatusError(null)
-
     try {
-      setUpdatingIssueId(issueId)
+      setUpdatingIssueId(issueId);
+      setStatusError("");
 
-      const updatedIssue = await updateIssueStatus(
-        issueId,
-        {
-          status,
-        },
-      )
+      const updatedIssue = await updateIssueStatus(issueId, {
+        status,
+      });
 
       setIssues((currentIssues) =>
         currentIssues.map((issue) =>
-          issue.id === updatedIssue.id
-            ? updatedIssue
-            : issue,
+          issue.id === issueId ? updatedIssue : issue,
         ),
-      )
+      );
     } catch {
-      setStatusError('Failed to update issue status')
+      setStatusError("Failed to update issue status");
     } finally {
-      setUpdatingIssueId(null)
+      setUpdatingIssueId(null);
     }
+  }
+
+  function formatStatus(status: IssueStatus) {
+    return status
+      .split("_")
+      .map(
+        (word) =>
+          word.charAt(0).toUpperCase() +
+          word.slice(1).toLowerCase(),
+      )
+      .join(" ");
   }
 
   if (isLoading) {
     return (
       <main className="project-details-page">
-        <section className="details-state-card">
-          <div className="loading-indicator" />
-
-          <h1>Loading project</h1>
-
-          <p>
-            Fetching project details and issues...
-          </p>
-        </section>
+        <div className="project-details-message">
+          Loading project...
+        </div>
       </main>
-    )
+    );
   }
 
-  if (error) {
+  if (error || !project) {
     return (
       <main className="project-details-page">
-        <section className="details-state-card">
-          <h1>
-            {error === 'Project not found'
-              ? 'Project not found'
-              : 'Something went wrong'}
-          </h1>
-
-          <p>{error}</p>
-
-          <Link
-            className="primary-details-link"
-            to="/projects"
-          >
-            Back to Projects
-          </Link>
-        </section>
+        <div className="project-details-message project-details-error">
+          {error || "Project not found"}
+        </div>
       </main>
-    )
-  }
-
-  if (!project) {
-    return null
+    );
   }
 
   return (
     <main className="project-details-page">
-      <Link
-        className="back-link"
-        to="/projects"
-      >
+      <Link className="project-back-link" to="/projects">
         ← Back to Projects
       </Link>
 
-      <header className="project-details-header">
-        <p className="project-id">
+      <section className="project-overview-card">
+        <p className="project-overview-id">
           Project #{project.id}
         </p>
 
         <h1>{project.name}</h1>
 
-        <p>{project.description}</p>
-      </header>
+        <p className="project-overview-description">
+          {project.description || "No project description provided."}
+        </p>
+      </section>
 
-      <section className="project-details-section">
-        <div className="issues-section-header">
+      <section className="project-issues-section">
+        <div className="project-issues-header">
           <div>
             <h2>Issues</h2>
 
             <p>
-              {issues.length} issue{issues.length === 1 ? '' : 's'}
+              {issues.length}{" "}
+              {issues.length === 1 ? "issue" : "issues"} in this
+              project
             </p>
           </div>
-        </div>
-
-        <form
-          className="issue-form"
-          onSubmit={handleCreateIssue}
-        >
-          <div className="issue-form-fields">
-            <div className="issue-form-field">
-              <label htmlFor="issue-title">
-                Issue Title
-              </label>
-
-              <input
-                id="issue-title"
-                type="text"
-                value={issueTitle}
-                onChange={(event) =>
-                  setIssueTitle(event.target.value)
-                }
-                placeholder="e.g. Login button not working"
-              />
-            </div>
-
-            <div className="issue-form-field">
-              <label htmlFor="issue-description">
-                Description
-              </label>
-
-              <textarea
-                id="issue-description"
-                value={issueDescription}
-                onChange={(event) =>
-                  setIssueDescription(event.target.value)
-                }
-                placeholder="Describe the issue"
-                rows={4}
-              />
-            </div>
-          </div>
-
-          {issueFormError && (
-            <p className="issue-form-error">
-              {issueFormError}
-            </p>
-          )}
 
           <button
-            className="create-issue-button"
-            type="submit"
-            disabled={isCreatingIssue}
+            className="project-primary-button"
+            type="button"
+            onClick={openCreateIssueModal}
           >
-            {isCreatingIssue
-              ? 'Creating...'
-              : 'Create Issue'}
+            <span aria-hidden="true">+</span>
+            New Issue
           </button>
-        </form>
+        </div>
 
         {statusError && (
-          <p className="status-error">
+          <div className="project-status-error">
             {statusError}
-          </p>
+          </div>
         )}
 
         {issues.length === 0 ? (
-          <p className="section-placeholder">
-            No issues have been created for this project.
-          </p>
+          <div className="project-issues-empty">
+            <div
+              className="project-issues-empty-icon"
+              aria-hidden="true"
+            >
+              IF
+            </div>
+
+            <h3>No issues yet</h3>
+
+            <p>
+              Create the first issue for this project to start
+              tracking work.
+            </p>
+
+            <button
+              className="project-primary-button"
+              type="button"
+              onClick={openCreateIssueModal}
+            >
+              Create Issue
+            </button>
+          </div>
         ) : (
-          <div className="issues-list">
+          <div className="project-issues-list">
             {issues.map((issue) => (
               <article
-                className="issue-card"
+                className="project-issue-card"
                 key={issue.id}
               >
-                <div className="issue-card-header">
-                  <div>
-                    <p className="issue-number">
-                      Issue #{issue.id}
-                    </p>
+                <div className="project-issue-main">
+                  <p className="project-issue-id">
+                    Issue #{issue.id}
+                  </p>
 
-                    <h3>{issue.title}</h3>
-                  </div>
+                  <h3>{issue.title}</h3>
+
+                  <p className="project-issue-description">
+                    {issue.description ||
+                      "No issue description provided."}
+                  </p>
+                </div>
+
+                <div className="project-issue-status">
+                  <label
+                    className="project-status-label"
+                    htmlFor={`issue-status-${issue.id}`}
+                  >
+                    Status
+                  </label>
 
                   <select
-                    className={`issue-status-select issue-status-${issue.status.toLowerCase()}`}
+                    id={`issue-status-${issue.id}`}
+                    className={`project-status-select project-status-${issue.status.toLowerCase()}`}
                     value={issue.status}
+                    disabled={updatingIssueId === issue.id}
                     onChange={(event) =>
                       handleStatusChange(
                         issue.id,
                         event.target.value as IssueStatus,
                       )
                     }
-                    disabled={updatingIssueId !== null}
-                    aria-label={`Status for ${issue.title}`}
                   >
-                    <option value="OPEN">
-                      OPEN
-                    </option>
-
-                    <option value="IN_PROGRESS">
-                      IN PROGRESS
-                    </option>
-
-                    <option value="RESOLVED">
-                      RESOLVED
-                    </option>
+                    {issueStatuses.map((status) => (
+                      <option key={status} value={status}>
+                        {formatStatus(status)}
+                      </option>
+                    ))}
                   </select>
                 </div>
-
-                <p className="issue-description">
-                  {issue.description}
-                </p>
               </article>
             ))}
           </div>
         )}
       </section>
+
+      {isCreateModalOpen && (
+        <div
+          className="issue-modal-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              closeCreateIssueModal();
+            }
+          }}
+        >
+          <section
+            className="issue-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="create-issue-title"
+          >
+            <div className="issue-modal-header">
+              <div>
+                <p className="issue-modal-eyebrow">
+                  NEW ISSUE
+                </p>
+
+                <h2 id="create-issue-title">
+                  Create Issue
+                </h2>
+
+                <p>
+                  Add an issue to {project.name}.
+                </p>
+              </div>
+
+              <button
+                className="issue-modal-close"
+                type="button"
+                aria-label="Close create issue dialog"
+                onClick={closeCreateIssueModal}
+                disabled={isCreatingIssue}
+              >
+                ×
+              </button>
+            </div>
+
+            <form
+              className="issue-form"
+              onSubmit={handleCreateIssue}
+            >
+              <div className="issue-form-field">
+                <label htmlFor="issue-title">
+                  Issue Title
+                </label>
+
+                <input
+                  id="issue-title"
+                  placeholder="e.g. Login button not working"
+                  value={issueTitle}
+                  onChange={(event) =>
+                    setIssueTitle(event.target.value)
+                  }
+                  autoFocus
+                />
+              </div>
+
+              <div className="issue-form-field">
+                <label htmlFor="issue-description">
+                  Description
+                </label>
+
+                <textarea
+                  id="issue-description"
+                  rows={5}
+                  placeholder="Describe the issue"
+                  value={issueDescription}
+                  onChange={(event) =>
+                    setIssueDescription(event.target.value)
+                  }
+                />
+              </div>
+
+              {issueFormError && (
+                <p className="issue-form-error">
+                  {issueFormError}
+                </p>
+              )}
+
+              <div className="issue-modal-actions">
+                <button
+                  className="project-secondary-button"
+                  type="button"
+                  onClick={closeCreateIssueModal}
+                  disabled={isCreatingIssue}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  className="project-primary-button"
+                  type="submit"
+                  disabled={isCreatingIssue}
+                >
+                  {isCreatingIssue
+                    ? "Creating..."
+                    : "Create Issue"}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
     </main>
-  )
+  );
 }
 
-export default ProjectDetailsPage
+export default ProjectDetailsPage;
