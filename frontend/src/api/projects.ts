@@ -6,6 +6,8 @@ import type {
   UpdateProjectRequest,
 } from '../types/project'
 
+export type { Project };
+
 export function getProjects(): Promise<Project[]> {
   return apiRequest<Project[]>('/api/projects')
 }

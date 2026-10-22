@@ -1,373 +1,435 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import type { FormEvent } from 'react'
-
+import { useEffect, useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
 import {
   createProject,
   getProjects,
   updateProject,
-} from '../api/projects'
-
-import type { Project } from '../types/project'
-
-import './ProjectsPage.css'
+  type Project,
+} from "../api/projects";
+import "./ProjectsPage.css";
 
 function ProjectsPage() {
-  const [projects, setProjects] = useState<Project[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const [reloadKey, setReloadKey] = useState(0)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
 
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [formError, setFormError] = useState<string | null>(null)
-
-  const [editingProjectId, setEditingProjectId] =
-    useState<number | null>(null)
-
-  const [editName, setEditName] = useState('')
-  const [editDescription, setEditDescription] = useState('')
-
-  const [isUpdating, setIsUpdating] = useState(false)
-  const [editError, setEditError] = useState<string | null>(null)
+  const [editingProjectId, setEditingProjectId] = useState<number | null>(
+    null,
+  );
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [editError, setEditError] = useState("");
 
   useEffect(() => {
     async function loadProjects() {
-      setIsLoading(true)
-      setError(null)
-
       try {
-        const data = await getProjects()
-
-        setProjects(data)
+        const data = await getProjects();
+        setProjects(data);
       } catch {
-        setError(
-          'Unable to load projects. Please try again.',
-        )
+        setError("Failed to load projects");
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
     }
 
-    loadProjects()
-  }, [reloadKey])
+    loadProjects();
+  }, []);
 
-  async function handleSubmit(
-    event: FormEvent<HTMLFormElement>,
-  ) {
-    event.preventDefault()
+  useEffect(() => {
+    if (!isCreateModalOpen) {
+      return;
+    }
 
-    setFormError(null)
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        closeCreateModal();
+      }
+    }
 
-    const trimmedName = name.trim()
-    const trimmedDescription = description.trim()
+    document.addEventListener("keydown", handleEscape);
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "";
+    };
+  }, [isCreateModalOpen]);
+
+  function openCreateModal() {
+    setFormError("");
+    setIsCreateModalOpen(true);
+  }
+
+  function closeCreateModal() {
+    if (isSubmitting) {
+      return;
+    }
+
+    setIsCreateModalOpen(false);
+    setName("");
+    setDescription("");
+    setFormError("");
+  }
+
+  async function handleCreateProject(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const trimmedName = name.trim();
+    const trimmedDescription = description.trim();
 
     if (!trimmedName) {
-      setFormError('Project name is required')
-      return
+      setFormError("Project name is required");
+      return;
     }
 
     try {
-      setIsSubmitting(true)
+      setIsSubmitting(true);
+      setFormError("");
 
-      const newProject = await createProject({
+      const createdProject = await createProject({
         name: trimmedName,
         description: trimmedDescription,
-      })
+      });
 
       setProjects((currentProjects) => [
         ...currentProjects,
-        newProject,
-      ])
+        createdProject,
+      ]);
 
-      setName('')
-      setDescription('')
+      setName("");
+      setDescription("");
+      setIsCreateModalOpen(false);
     } catch {
-      setFormError('Failed to create project')
+      setFormError("Failed to create project");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
 
   function startEditing(project: Project) {
-    setEditingProjectId(project.id)
-    setEditName(project.name)
-    setEditDescription(project.description)
-    setEditError(null)
+    setEditingProjectId(project.id);
+    setEditName(project.name);
+    setEditDescription(project.description);
+    setEditError("");
   }
 
   function cancelEditing() {
-    setEditingProjectId(null)
-    setEditName('')
-    setEditDescription('')
-    setEditError(null)
+    setEditingProjectId(null);
+    setEditName("");
+    setEditDescription("");
+    setEditError("");
   }
 
-  async function handleUpdate(
+  async function handleUpdateProject(
     event: FormEvent<HTMLFormElement>,
     projectId: number,
   ) {
-    event.preventDefault()
+    event.preventDefault();
 
-    setEditError(null)
-
-    const trimmedName = editName.trim()
-    const trimmedDescription = editDescription.trim()
+    const trimmedName = editName.trim();
+    const trimmedDescription = editDescription.trim();
 
     if (!trimmedName) {
-      setEditError('Project name is required')
-      return
+      setEditError("Project name is required");
+      return;
     }
 
     try {
-      setIsUpdating(true)
+      setIsUpdating(true);
+      setEditError("");
 
-      const updatedProject = await updateProject(
-        projectId,
-        {
-          name: trimmedName,
-          description: trimmedDescription,
-        },
-      )
+      const updatedProject = await updateProject(projectId, {
+        name: trimmedName,
+        description: trimmedDescription,
+      });
 
       setProjects((currentProjects) =>
         currentProjects.map((project) =>
-          project.id === updatedProject.id
-            ? updatedProject
-            : project,
+          project.id === projectId ? updatedProject : project,
         ),
-      )
+      );
 
-      cancelEditing()
+      cancelEditing();
     } catch {
-      setEditError('Failed to update project')
+      setEditError("Failed to update project");
     } finally {
-      setIsUpdating(false)
+      setIsUpdating(false);
     }
-  }
-
-  if (isLoading) {
-    return (
-      <main className="projects-page">
-        <section className="projects-state-card">
-          <div className="loading-indicator" />
-
-          <h1>Loading projects</h1>
-
-          <p>
-            Fetching projects from IssueFlow...
-          </p>
-        </section>
-      </main>
-    )
-  }
-
-  if (error) {
-    return (
-      <main className="projects-page">
-        <section className="projects-state-card">
-          <h1>Unable to load projects</h1>
-
-          <p>{error}</p>
-
-          <button
-            className="primary-button"
-            type="button"
-            onClick={() =>
-              setReloadKey((current) => current + 1)
-            }
-          >
-            Try Again
-          </button>
-        </section>
-      </main>
-    )
   }
 
   return (
     <main className="projects-page">
-      <header className="projects-header">
-        <h1>Projects</h1>
-        <p>
-          Manage software projects and their associated issues.
-        </p>
-      </header>
-
-      <section className="project-form-section">
-        <div className="project-form-header">
-          <h2>Create Project</h2>
-          <p>
-            Add a new software project to IssueFlow.
-          </p>
+      <div className="projects-header">
+        <div>
+          <p className="projects-eyebrow">ISSUEFLOW</p>
+          <h1>Projects</h1>
+          <p>Manage software projects and their associated issues.</p>
         </div>
 
-        <form
-          className="project-form"
-          onSubmit={handleSubmit}
+        <button
+          className="primary-button projects-new-button"
+          type="button"
+          onClick={openCreateModal}
         >
-          <div className="form-field">
-            <label htmlFor="project-name">
-              Project Name
-            </label>
+          <span aria-hidden="true">+</span>
+          New Project
+        </button>
+      </div>
 
-            <input
-              id="project-name"
-              type="text"
-              value={name}
-              onChange={(event) =>
-                setName(event.target.value)
-              }
-              placeholder="e.g. Customer Portal"
-            />
-          </div>
+      {isLoading && (
+        <div className="projects-message">
+          <p>Loading projects...</p>
+        </div>
+      )}
 
-          <div className="form-field">
-            <label htmlFor="project-description">
-              Description
-            </label>
+      {!isLoading && error && (
+        <div className="projects-message projects-error">
+          <p>{error}</p>
+        </div>
+      )}
 
-            <textarea
-              id="project-description"
-              value={description}
-              onChange={(event) =>
-                setDescription(event.target.value)
-              }
-              placeholder="Describe the project"
-              rows={4}
-            />
-          </div>
-
-          {formError && (
-            <p className="form-error">
-              {formError}
-            </p>
-          )}
-
-          <button
-            className="primary-button"
-            type="submit"
-            disabled={isSubmitting}
-          >
-            {isSubmitting
-              ? 'Creating...'
-              : 'Create Project'}
-          </button>
-        </form>
-      </section>
-
-      {projects.length === 0 ? (
+      {!isLoading && !error && projects.length === 0 && (
         <section className="projects-empty-state">
+          <div className="projects-empty-icon" aria-hidden="true">
+            IF
+          </div>
+
           <h2>No projects yet</h2>
 
           <p>
-            Create your first project using the form above.
+            Create your first project to start tracking software issues in
+            IssueFlow.
           </p>
+
+          <button
+            className="primary-button"
+            type="button"
+            onClick={openCreateModal}
+          >
+            Create Project
+          </button>
         </section>
-      ) : (
-        <div className="projects-grid">
-          {projects.map((project) => (
-            <article
-              className="project-card"
-              key={project.id}
-            >
-              {editingProjectId === project.id ? (
-                <form
-                  className="project-edit-form"
-                  onSubmit={(event) =>
-                    handleUpdate(event, project.id)
-                  }
-                >
-                  <div className="form-field">
-                    <label htmlFor={`edit-name-${project.id}`}>
-                      Project Name
-                    </label>
+      )}
 
-                    <input
-                      id={`edit-name-${project.id}`}
-                      type="text"
-                      value={editName}
-                      onChange={(event) =>
-                        setEditName(event.target.value)
-                      }
-                    />
-                  </div>
+      {!isLoading && !error && projects.length > 0 && (
+        <section className="projects-content">
+          <div className="projects-section-heading">
+            <div>
+              <h2>All Projects</h2>
 
-                  <div className="form-field">
-                    <label
-                      htmlFor={`edit-description-${project.id}`}
-                    >
-                      Description
-                    </label>
+              <p>
+                {projects.length}{" "}
+                {projects.length === 1 ? "project" : "projects"}
+              </p>
+            </div>
+          </div>
 
-                    <textarea
-                      id={`edit-description-${project.id}`}
-                      value={editDescription}
-                      onChange={(event) =>
-                        setEditDescription(event.target.value)
-                      }
-                      rows={4}
-                    />
-                  </div>
+          <div className="projects-grid">
+            {projects.map((project) => (
+              <article className="project-card" key={project.id}>
+                {editingProjectId === project.id ? (
+                  <form
+                    className="project-edit-form"
+                    onSubmit={(event) =>
+                      handleUpdateProject(event, project.id)
+                    }
+                  >
+                    <div className="form-field">
+                      <label htmlFor={`project-name-${project.id}`}>
+                        Project Name
+                      </label>
 
-                  {editError && (
-                    <p className="form-error">
-                      {editError}
+                      <input
+                        id={`project-name-${project.id}`}
+                        value={editName}
+                        onChange={(event) =>
+                          setEditName(event.target.value)
+                        }
+                      />
+                    </div>
+
+                    <div className="form-field">
+                      <label
+                        htmlFor={`project-description-${project.id}`}
+                      >
+                        Description
+                      </label>
+
+                      <textarea
+                        id={`project-description-${project.id}`}
+                        rows={4}
+                        value={editDescription}
+                        onChange={(event) =>
+                          setEditDescription(event.target.value)
+                        }
+                      />
+                    </div>
+
+                    {editError && (
+                      <p className="form-error">{editError}</p>
+                    )}
+
+                    <div className="project-card-actions">
+                      <button
+                        className="primary-button"
+                        type="submit"
+                        disabled={isUpdating}
+                      >
+                        {isUpdating ? "Saving..." : "Save Changes"}
+                      </button>
+
+                      <button
+                        className="secondary-button"
+                        type="button"
+                        onClick={cancelEditing}
+                        disabled={isUpdating}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <>
+                    <div className="project-card-header">
+                      <div>
+                        <p className="project-card-id">
+                          Project #{project.id}
+                        </p>
+
+                        <h3>{project.name}</h3>
+                      </div>
+                    </div>
+
+                    <p className="project-card-description">
+                      {project.description ||
+                        "No project description provided."}
                     </p>
-                  )}
 
-                  <div className="project-card-actions">
-                    <button
-                      className="primary-button"
-                      type="submit"
-                      disabled={isUpdating}
-                    >
-                      {isUpdating
-                        ? 'Saving...'
-                        : 'Save Changes'}
-                    </button>
+                    <div className="project-card-footer">
+                      <Link
+                        className="primary-button project-link"
+                        to={`/projects/${project.id}`}
+                      >
+                        View Project
+                      </Link>
 
-                    <button
-                      className="secondary-button"
-                      type="button"
-                      onClick={cancelEditing}
-                      disabled={isUpdating}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <>
-                  <h2>{project.name}</h2>
-                  <p>{project.description}</p>
+                      <button
+                        className="secondary-button"
+                        type="button"
+                        onClick={() => startEditing(project)}
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  </>
+                )}
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
-                  <div className="project-card-actions">
-                    <Link
-                      className="primary-link"
-                      to={`/projects/${project.id}`}
-                    >
-                      View Project
-                    </Link>
+      {isCreateModalOpen && (
+        <div
+          className="project-modal-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              closeCreateModal();
+            }
+          }}
+        >
+          <section
+            className="project-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="create-project-title"
+          >
+            <div className="project-modal-header">
+              <div>
+                <p className="project-modal-eyebrow">NEW PROJECT</p>
+                <h2 id="create-project-title">Create Project</h2>
+                <p>Add a new software project to IssueFlow.</p>
+              </div>
 
-                    <button
-                      className="secondary-button"
-                      type="button"
-                      onClick={() => startEditing(project)}
-                    >
-                      Edit
-                    </button>
-                  </div>
-                </>
+              <button
+                className="project-modal-close"
+                type="button"
+                aria-label="Close create project dialog"
+                onClick={closeCreateModal}
+                disabled={isSubmitting}
+              >
+                ×
+              </button>
+            </div>
+
+            <form
+              className="project-form"
+              onSubmit={handleCreateProject}
+            >
+              <div className="form-field">
+                <label htmlFor="project-name">Project Name</label>
+
+                <input
+                  id="project-name"
+                  placeholder="e.g. Customer Portal"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  autoFocus
+                />
+              </div>
+
+              <div className="form-field">
+                <label htmlFor="project-description">
+                  Description
+                </label>
+
+                <textarea
+                  id="project-description"
+                  rows={5}
+                  placeholder="Describe the project"
+                  value={description}
+                  onChange={(event) =>
+                    setDescription(event.target.value)
+                  }
+                />
+              </div>
+
+              {formError && (
+                <p className="form-error">{formError}</p>
               )}
-            </article>
-          ))}
+
+              <div className="project-modal-actions">
+                <button
+                  className="secondary-button"
+                  type="button"
+                  onClick={closeCreateModal}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  className="primary-button"
+                  type="submit"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Creating..." : "Create Project"}
+                </button>
+              </div>
+            </form>
+          </section>
         </div>
       )}
     </main>
-  )
+  );
 }
 
-export default ProjectsPage
+export default ProjectsPage;
