@@ -25,13 +25,13 @@ function AppLayout() {
     <div className="app-shell">
       <aside className="app-sidebar">
         <div className="app-brand">
-          <div className="app-brand-mark">
-            IF
-          </div>
+          <div className="app-brand-mark">IF</div>
 
           <div>
-            <p>IssueFlow</p>
-            <span>Issue Management</span>
+            <span className="app-brand-name">IssueFlow</span>
+            <span className="app-brand-subtitle">
+              Issue Management
+            </span>
           </div>
         </div>
 
@@ -60,6 +60,14 @@ function AppLayout() {
           </NavLink>
         </nav>
 
+        <button
+          className="mobile-logout-button"
+          type="button"
+          onClick={handleLogout}
+        >
+          Sign Out
+        </button>
+
         <div className="sidebar-user">
           <div className="sidebar-user-info">
             <span className="sidebar-user-label">
@@ -78,11 +86,6 @@ function AppLayout() {
           >
             Sign Out
           </button>
-        </div>
-
-        <div className="app-sidebar-footer">
-          <p>IssueFlow</p>
-          <span>Software issue & release management</span>
         </div>
       </aside>
 
