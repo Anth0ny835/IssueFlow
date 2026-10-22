@@ -89,113 +89,129 @@ function RegisterPage() {
   }
 
   return (
-    <main className="login-page">
-      <section className="login-card">
-        <div className="login-brand">
-          <div className="login-brand-mark">
-            IF
+    <main className="auth-page">
+      <section className="auth-shell">
+        <div className="auth-intro">
+          <div className="auth-brand">
+            <div className="auth-brand-mark">IF</div>
+
+            <div>
+              <strong>IssueFlow</strong>
+              <span>Issue Management</span>
+            </div>
           </div>
 
-          <div>
-            <p>IssueFlow</p>
-            <span>Issue Management</span>
+          <div className="auth-intro-content">
+            <p className="auth-eyebrow">ISSUEFLOW</p>
+
+            <h1>Bring projects and issues into one workspace.</h1>
+
+            <p>
+              Create an account to manage projects, track issue
+              progress, and keep development work organised.
+            </p>
           </div>
+
+          <p className="auth-intro-footer">
+            Software issue &amp; release management
+          </p>
         </div>
 
-        <header className="login-header">
-          <h1>Create account</h1>
+        <div className="auth-form-side">
+          <section className="auth-card">
+            <div className="auth-card-header">
+              <p className="auth-eyebrow">GET STARTED</p>
 
-          <p>
-            Create an account to start using
-            IssueFlow.
-          </p>
-        </header>
+              <h2>Create your account</h2>
 
-        <form
-          className="login-form"
-          onSubmit={handleSubmit}
-        >
-          <div className="login-field">
-            <label htmlFor="register-email">
-              Email
-            </label>
+              <p>
+                Set up your IssueFlow workspace in a few seconds.
+              </p>
+            </div>
 
-            <input
-              id="register-email"
-              type="email"
-              value={email}
-              onChange={(event) =>
-                setEmail(event.target.value)
-              }
-              placeholder="you@example.com"
-              autoComplete="email"
-            />
-          </div>
-
-          <div className="login-field">
-            <label htmlFor="register-password">
-              Password
-            </label>
-
-            <input
-              id="register-password"
-              type="password"
-              value={password}
-              onChange={(event) =>
-                setPassword(event.target.value)
-              }
-              placeholder="At least 8 characters"
-              autoComplete="new-password"
-            />
-          </div>
-
-          <div className="login-field">
-            <label
-              htmlFor="register-confirm-password"
+            <form
+              className="auth-form"
+              onSubmit={handleSubmit}
             >
-              Confirm password
-            </label>
+              <div className="auth-field">
+                <label htmlFor="register-email">
+                  Email
+                </label>
 
-            <input
-              id="register-confirm-password"
-              type="password"
-              value={confirmPassword}
-              onChange={(event) =>
-                setConfirmPassword(
-                  event.target.value,
-                )
-              }
-              placeholder="Enter password again"
-              autoComplete="new-password"
-            />
-          </div>
+                <input
+                  id="register-email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(event) =>
+                    setEmail(event.target.value)
+                  }
+                />
+              </div>
 
-          {error && (
-            <p className="login-error">
-              {error}
+              <div className="auth-field">
+                <label htmlFor="register-password">
+                  Password
+                </label>
+
+                <input
+                  id="register-password"
+                  type="password"
+                  autoComplete="new-password"
+                  placeholder="At least 8 characters"
+                  value={password}
+                  onChange={(event) =>
+                    setPassword(event.target.value)
+                  }
+                />
+              </div>
+
+              <div className="auth-field">
+                <label htmlFor="register-confirm-password">
+                  Confirm Password
+                </label>
+
+                <input
+                  id="register-confirm-password"
+                  type="password"
+                  autoComplete="new-password"
+                  placeholder="Enter your password again"
+                  value={confirmPassword}
+                  onChange={(event) =>
+                    setConfirmPassword(event.target.value)
+                  }
+                />
+              </div>
+
+              {error && (
+                <div className="auth-error" role="alert">
+                  {error}
+                </div>
+              )}
+
+              <button
+                className="auth-primary-button"
+                type="submit"
+                disabled={isSubmitting}
+              >
+                {isSubmitting
+                  ? "Creating account..."
+                  : "Create Account"}
+              </button>
+            </form>
+
+            <p className="auth-switch">
+              Already have an account?{" "}
+              <Link to="/login">
+                Sign in
+              </Link>
             </p>
-          )}
-
-          <button
-            className="login-button"
-            type="submit"
-            disabled={isSubmitting}
-          >
-            {isSubmitting
-              ? 'Creating account...'
-              : 'Create Account'}
-          </button>
-
-          <p className="auth-switch">
-            Already have an account?{' '}
-            <Link to="/login">
-              Sign in
-            </Link>
-          </p>
-        </form>
+          </section>
+        </div>
       </section>
     </main>
-  )
+  );
 }
 
 export default RegisterPage
