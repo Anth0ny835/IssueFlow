@@ -101,50 +101,105 @@ function DashboardPage() {
     <main className="dashboard-page">
       <header className="dashboard-header">
         <div>
-          <p className="dashboard-eyebrow">
-            IssueFlow
-          </p>
+          <p className="dashboard-eyebrow">ISSUEFLOW</p>
 
           <h1>Dashboard</h1>
 
-          <p>
-            Overview of projects and issue status across
-            the system.
+          <p className="dashboard-subtitle">
+            Overview of projects and issue status across the system.
           </p>
         </div>
 
-        <Link
-          className="dashboard-link"
-          to="/projects"
-        >
+        <Link className="dashboard-link" to="/projects">
           View Projects
         </Link>
       </header>
 
-      <section className="dashboard-grid">
-        <article className="dashboard-card">
-          <p>Total Projects</p>
+      <section
+        className="dashboard-grid"
+        aria-label="IssueFlow overview"
+      >
+        <article className="dashboard-card dashboard-card-neutral">
+          <div className="dashboard-card-top">
+            <span className="dashboard-card-label">
+              Total Projects
+            </span>
+
+            <span
+              className="dashboard-card-indicator"
+              aria-hidden="true"
+            />
+          </div>
+
           <strong>{projects.length}</strong>
+
+          <p>Projects currently tracked</p>
         </article>
 
-        <article className="dashboard-card">
-          <p>Total Issues</p>
+        <article className="dashboard-card dashboard-card-neutral">
+          <div className="dashboard-card-top">
+            <span className="dashboard-card-label">
+              Total Issues
+            </span>
+
+            <span
+              className="dashboard-card-indicator"
+              aria-hidden="true"
+            />
+          </div>
+
           <strong>{issues.length}</strong>
+
+          <p>Issues across all projects</p>
         </article>
 
-        <article className="dashboard-card">
-          <p>Open</p>
+        <article className="dashboard-card dashboard-card-open">
+          <div className="dashboard-card-top">
+            <span className="dashboard-card-label">Open</span>
+
+            <span
+              className="dashboard-card-indicator"
+              aria-hidden="true"
+            />
+          </div>
+
           <strong>{openIssues}</strong>
+
+          <p>Waiting to be worked on</p>
         </article>
 
-        <article className="dashboard-card">
-          <p>In Progress</p>
+        <article className="dashboard-card dashboard-card-progress">
+          <div className="dashboard-card-top">
+            <span className="dashboard-card-label">
+              In Progress
+            </span>
+
+            <span
+              className="dashboard-card-indicator"
+              aria-hidden="true"
+            />
+          </div>
+
           <strong>{inProgressIssues}</strong>
+
+          <p>Currently being worked on</p>
         </article>
 
-        <article className="dashboard-card">
-          <p>Resolved</p>
+        <article className="dashboard-card dashboard-card-resolved">
+          <div className="dashboard-card-top">
+            <span className="dashboard-card-label">
+              Resolved
+            </span>
+
+            <span
+              className="dashboard-card-indicator"
+              aria-hidden="true"
+            />
+          </div>
+
           <strong>{resolvedIssues}</strong>
+
+          <p>Completed issues</p>
         </article>
       </section>
 
@@ -153,25 +208,35 @@ function DashboardPage() {
           <div>
             <h2>Recent Issues</h2>
 
-            <p>
-              Latest issues across all projects.
-            </p>
+            <p>Latest issues across all projects.</p>
           </div>
+
+          <Link className="recent-issues-link" to="/projects">
+            Browse projects →
+          </Link>
         </div>
 
         {recentIssues.length === 0 ? (
           <div className="dashboard-empty-state">
+            <div
+              className="dashboard-empty-icon"
+              aria-hidden="true"
+            >
+              IF
+            </div>
+
             <h3>No issues yet</h3>
 
             <p>
-              Create an issue from one of your projects.
+              Create a project and add your first issue to start
+              tracking work.
             </p>
 
             <Link
-              className="dashboard-link"
+              className="dashboard-empty-action"
               to="/projects"
             >
-              View Projects
+              Go to Projects
             </Link>
           </div>
         ) : (
@@ -184,20 +249,31 @@ function DashboardPage() {
               >
                 <div className="recent-issue-content">
                   <p className="recent-issue-meta">
-                    Issue #{issue.id} · {issue.projectName}
+                    Issue #{issue.id}
+                    {issue.projectName
+                      ? ` · ${issue.projectName}`
+                      : ""}
                   </p>
 
                   <h3>{issue.title}</h3>
 
                   <p className="recent-issue-description">
-                    {issue.description}
+                    {issue.description ||
+                      "No issue description provided."}
                   </p>
                 </div>
 
                 <span
                   className={`dashboard-status dashboard-status-${issue.status.toLowerCase()}`}
                 >
-                  {issue.status.replace('_', ' ')}
+                  {issue.status
+                    .split("_")
+                    .map(
+                      (word) =>
+                        word.charAt(0).toUpperCase() +
+                        word.slice(1).toLowerCase(),
+                    )
+                    .join(" ")}
                 </span>
               </Link>
             ))}
@@ -205,7 +281,7 @@ function DashboardPage() {
         )}
       </section>
     </main>
-  )
+  );
 }
 
 export default DashboardPage
